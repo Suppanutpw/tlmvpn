@@ -25,9 +25,6 @@ HWDSLVPNFILE="/etc/tlmvpn/vpn.sh"
 
 S3LOCALFILE="/etc/tlmvpn"
 
-# NAT สำหรับ ออก internet
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-
 sudo rm "$S3LOCALFILE"/ipsec.secrets
 sudo rm "$S3LOCALFILE"/chap-secrets
 

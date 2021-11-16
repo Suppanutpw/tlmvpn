@@ -26,6 +26,7 @@ mv tlmvpnServer.sh /etc/tlmvpn/tlmvpnServer.sh
     echo "# Added by tlmvpn VPN script"
     echo "sudo nohup bash /etc/tlmvpn/tlmvpnServer.sh > /etc/tlmvpn/tlmvpnServer.log 2>&1 & echo $! > /var/run/tlmvpnServer.pid"
     echo "sudo service ospfd start" 
+    echo "sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE"
     echo ""
 } >> /etc/rc.local
 
