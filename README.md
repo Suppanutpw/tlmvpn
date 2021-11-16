@@ -95,11 +95,6 @@ sudo service ospfd start
 sudo systemctl start ospfd
 ```
 
-หากต้องการให้ส่ง Internet Traffic ผ่าน VPN ให้เปิด NAT ด้วยคำสั่งต่อไปนี้
-```sh
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-```
-
 การตั้งค่า route สำหรับ host ที่ต่อพ่วง VPN Client บน ubuntu โดยพิมพ์คำสั่ง `nano /etc/netplan/50-cloud-init.yaml`
 ```
 network:
