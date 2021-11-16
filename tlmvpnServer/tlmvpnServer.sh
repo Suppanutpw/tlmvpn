@@ -22,6 +22,7 @@ USERDBFILE="/etc/ppp/chap-secrets"
 SECRETKEYFILE="/etc/ipsec.secrets"
 LOGFILE="/etc/tlmvpn/tlmvpnServer.log"
 HWDSLVPNFILE="/etc/tlmvpn/vpn.sh"
+NATFILE="/etc/sysconfig/iptables"
 
 S3LOCALFILE="/etc/tlmvpn"
 
@@ -86,10 +87,26 @@ newTunnelIPThridOctet=$(echo $newTunnelIP | grep -Eo '([0-9]*\.){2}[0-9]*')
     echo "refuse pap = yes";
     echo "require authentication = yes";
     echo "name = l2tpd";
-    echo "pppoptfile = /etc/ppp/options.xl2tpd"
+    echo "pppoptfile = /etc/ppp/options.xl2tpd";
     echo "length bit = yes"
 } > $TUNNELFILE
 sed -i "s/@/$newTunnelIPThridOctet/g" $USERDBFILE
+
+# Gen New NAT Rule ถ้าแก้ ip octet ต้องมาแก้ใน NAT Rule ด้วย
+# 192.168.0.0/16
+# 172.16.0.0/12
+# 10.0.0.0/8
+{
+    echo "# Modified by TLMVPN script";
+    echo "*nat";
+    echo ":PREROUTING ACCEPT [0:0]";
+    echo ":INPUT ACCEPT [0:0]";
+    echo ":OUTPUT ACCEPT [0:0]";
+    echo ":POSTROUTING ACCEPT [0:0]";
+    echo "-A POSTROUTING -s 10.0.0.0/8 -o eth0 -j MASQUERADE";
+    echo "COMMIT";
+} > $NATFILE
+sudo iptables-restore < /etc/sysconfig/iptables
 
 # restart config
 service ipsec restart
