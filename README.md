@@ -6,7 +6,7 @@
 
 เริ่มแรกต้องเตรียม s3 bucket, iam role สำหรับ vpnserver, iam user สำหรับ vpnclient โดยกำหนดสิทธิ์ให้เข้าถึง ec2, s3 ได้ (หากต้องการ least privilege ศึกษาในโค้ดเพิ่มเติม)
 
-**1. นำไฟล์ CloudFormationVPN.yaml ลงไปใน AWS Cloud Formation**
+**1. สร้าง Environment โดยแยก VPC ระหว่างตัว VPN server กับ VPN Client**
 
 **2. ลง tlmvpn service ในเครื่อง server**
 
