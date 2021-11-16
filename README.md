@@ -15,9 +15,9 @@
 เอาไฟล์ chap-secrets กับ ipsec.secrets ใส่ในโฟลเดอร์นั้น
 **ตัวอย่างไฟล์ chap-secrets ตัวเลขคือ IP Octect สุดท้าย โดยเลือกได้ตั้งแต่เลข 10-250**
 ```
-"user" l2tpd "password" @.10
-"cat" l2tpd "12345678" @.11
-"test" l2tpd "testpass" @.12
+"username1" l2tpd "password2" @.10
+"username2" l2tpd "password2" @.11
+"username3" l2tpd "password3" @.12
 ```
 
 **ตัวอย่างไฟล์ ipsec.secrets**
@@ -34,8 +34,8 @@ sudo bash tlmvpnServerInstall.sh
 
 ### แก้โค้ดในไฟล์ tlmvpnServer.sh ด้วยคำสั่ง `nano /etc/tlmvpn/tlmvpnServer.sh`
 
-หากใช้ iam role ให้ข้ามขั้นตอนนี้ หากไม่: ให้ตั้ง credential ของ aws cli ก่อนต้องแก้ตัวแปรดังต่อไปนี้ และ uncomment บรรทัด 10-13 ออก
-- region
+ให้ตั้ง credential ของ aws cli ก่อนต้องแก้ตัวแปรดังต่อไปนี้ และ uncomment บรรทัด 10-13 ออก
+- region (หากใช้ iam role กำหนดแค่ส่วนนี้)
 - aws_access_key_id
 - aws_secret_access_key
 - aws_session_token
@@ -93,6 +93,11 @@ sudo service ospfd start
 รัน ospfd บน Ubuntu (VPN Client)
 ```sh
 sudo systemctl start ospfd
+```
+
+หากต้องการให้ส่ง Internet Traffic ผ่าน VPN ให้เปิด NAT ด้วยคำสั่งต่อไปนี้
+```sh
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 ```
 
 การตั้งค่า route สำหรับ host ที่ต่อพ่วง VPN Client บน ubuntu โดยพิมพ์คำสั่ง `nano /etc/netplan/50-cloud-init.yaml`
