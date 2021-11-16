@@ -1,0 +1,334 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'CloudFormation for VPN Project Cloud IT KMITL - 19 October 2021'
+
+Resources:
+  # start ------- VPNVPC -------
+  VPNVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.20.0.0/16
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN VPC'
+
+  VPNPublicSubnetInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: 'Name'
+        Value: 'VPN IGW'
+
+  VPNAttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: VPNVPC
+      InternetGatewayId:
+        Ref: VPNPublicSubnetInternetGateway
+
+  # Subnet in VPC
+  VPNPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPNVPC
+      CidrBlock: 10.20.1.0/24
+      AvailabilityZone: 'us-east-1a'
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Public Subnet 1'
+
+  VPNPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPNVPC
+      CidrBlock: 10.20.2.0/24
+      AvailabilityZone: 'us-east-1b'
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Public Subnet 2'
+
+  # Route Table and Route
+  VPNPublicSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPNVPC
+      Tags:
+      - Key: 'Name'
+        Value: 'VPN Public Route Table'
+
+  VPNPublicSubnetRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+       RouteTableId:
+         Ref: VPNPublicSubnetRouteTable
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId:
+         Ref: VPNPublicSubnetInternetGateway
+
+  # Association VPNPublicSubnetRouteTable to VPNPublicSubnet1 and VPNPublicSubnet2
+  VPNPublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: VPNPublicSubnet1
+      RouteTableId:
+        Ref: VPNPublicSubnetRouteTable
+
+  VPNPublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: VPNPublicSubnet2
+      RouteTableId:
+        Ref: VPNPublicSubnetRouteTable
+
+  # SecurityGroup
+  VPNAllowAllSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+          Ref: VPNVPC
+      GroupDescription: Enable SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '0'
+          ToPort: '65535'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: '0'
+          ToPort: '65535'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: 'Name'
+          Value: 'AllowAllPacket'
+
+  # EC2 Instance
+  VPNEC2ACTIVE:
+    Type: AWS::EC2::Instance
+    Properties:
+      SubnetId:
+          Ref: 'VPNPublicSubnet1'
+      ImageId: 'ami-02e136e904f3da870'
+      InstanceType: 't2.micro'
+      Monitoring: 'true'
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Server Active'
+        - Key: 'Service'
+          Value: 'vpnserver'
+        - Key: 'TunnelIP'
+          Value: '0.0.0.0'
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 8
+      SecurityGroupIds:
+        - Ref: 'VPNAllowAllSecurityGroup'
+      KeyName: 'vockey'
+
+  VPNEC2PASSIVE:
+    Type: AWS::EC2::Instance
+    Properties:
+      SubnetId:
+          Ref: 'VPNPublicSubnet2'
+      ImageId: 'ami-02e136e904f3da870'
+      InstanceType: 't2.micro'
+      Monitoring: 'true'
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Server Passive'
+        - Key: 'Service'
+          Value: 'vpnserver'
+        - Key: 'TunnelIP'
+          Value: '0.0.0.0'
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 8
+      SecurityGroupIds:
+        - Ref: 'VPNAllowAllSecurityGroup'
+      KeyName: 'vockey'
+
+  VPNEC2ACTIVEEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId:
+          Ref: VPNEC2ACTIVE
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Active EIP'
+
+  VPNEC2PASSIVEEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId:
+          Ref: VPNEC2PASSIVE
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Passive EIP'
+  # end ------- VPNVPC -------
+
+  # start ------- AWSVPC -------
+  AWSVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.30.0.0/16
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+      Tags:
+        - Key: 'Name'
+          Value: 'AWS VPC'
+
+  AWSPublicSubnetInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: 'Name'
+        Value: 'AWS IGW'
+
+  AWSAttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: AWSVPC
+      InternetGatewayId:
+        Ref: AWSPublicSubnetInternetGateway
+
+  # Subnet in VPC
+  AWSPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: AWSVPC
+      CidrBlock: 10.30.1.0/24
+      AvailabilityZone: 'us-east-1a'
+      Tags:
+        - Key: 'Name'
+          Value: 'AWS Public Subnet 1'
+
+  AWSPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: AWSVPC
+      CidrBlock: 10.30.2.0/24
+      AvailabilityZone: 'us-east-1a'
+      Tags:
+        - Key: 'Name'
+          Value: 'AWS Private Subnet 1'
+
+  # Route Table and Route
+  AWSPublicSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: AWSVPC
+      Tags:
+      - Key: 'Name'
+        Value: 'AWS Public Route Table'
+
+  AWSPublicSubnetRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+       RouteTableId:
+         Ref: AWSPublicSubnetRouteTable
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId:
+         Ref: AWSPublicSubnetInternetGateway
+
+  # Association AWSPublicSubnetRouteTable to AWSPublicSubnet1
+  AWSPublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: AWSPublicSubnet1
+      RouteTableId:
+        Ref: AWSPublicSubnetRouteTable
+
+  # SecurityGroup
+  AWSAllowAllSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+          Ref: AWSVPC
+      GroupDescription: Enable SSH
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '0'
+          ToPort: '65535'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: udp
+          FromPort: '0'
+          ToPort: '65535'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: icmp
+          FromPort: '-1'
+          ToPort: '-1'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: 'Name'
+          Value: 'AllowAllPacket'
+
+  # EC2 Instance + Network Interface For VPN Client
+  AWSEC2VPNClient:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: 'ami-07d0bbef5ea26ab13'
+      InstanceType: 'c4.large'
+      Monitoring: 'true'
+      Tags:
+        - Key: 'Name'
+          Value: 'AWS VPN Client'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 30
+      KeyName: 'vockey'
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          GroupSet:
+            - Ref: 'AWSAllowAllSecurityGroup'
+          SubnetId:
+            Ref: 'AWSPublicSubnet1'
+          PrivateIpAddress: 10.30.1.10
+
+  # VPN Client's Public Interfaces
+  AWSEC2WebService:
+    Type: AWS::EC2::Instance
+    Properties:
+      SubnetId:
+          Ref: 'AWSPublicSubnet1'
+      ImageId: 'ami-07d0bbef5ea26ab13'
+      InstanceType: 'c4.large'
+      Monitoring: 'true'
+      Tags:
+        - Key: 'Name'
+          Value: 'AWS Web Server'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 30
+      SecurityGroupIds:
+        - Ref: 'AWSAllowAllSecurityGroup'
+      KeyName: 'vockey'
+
+  AWSEC2VPNClientEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId:
+          Ref: AWSEC2VPNClient
+      Tags:
+        - Key: 'Name'
+          Value: 'VPN Passive EIP'
+
+  # end ------- AWSVPC -------
