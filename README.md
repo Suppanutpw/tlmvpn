@@ -46,11 +46,12 @@ sudo bash tlmvpnServerInstall.sh
 - S3USERFILE (path ไปยังไฟล์ chap-secrets) เช่น s3://gulugulu/vpnserver
 - S3SECRETFILE (path ไปยังไฟล์ ipsec.secrets) เช่น s3://gulugulu/vpnserver
 
-ทำการ reboot เครื่อง 1 รอบหลังจากนั้นสามารถใช้ระบบได้ตามปกติโดยไม่ต้องมีคำสั่งเพิ่มเติม และสามารถนำไปสร้าง AMI ต่อได้ **แต่ก่อนนำไปสร้าง AMI ให้แน่ใจว่าลบไฟล์ DB ทิ้ง (/etc/tlmvpn/[chap-secret, ipsec.secret]) และ kill process ของ Server แล้ว เพราะไม่งั้นตัวใหม่จะไม่ sync ข้อมูลกับ Database**
+ทำการ reboot เครื่อง 1 รอบหลังจากนั้นสามารถใช้ระบบได้ตามปกติโดยไม่ต้องมีคำสั่งเพิ่มเติม
+แต่หากจะนำไปสร้าง AMI ต่อไม่จำเป็นต้อง reboot **หาก reboot ไปแล้วก่อนนำไปสร้าง AMI ให้แน่ใจว่าลบไฟล์ DB ทิ้ง (/etc/tlmvpn/[chap-secret, ipsec.secret]) และ kill process ของ Server แล้ว เพราะไม่งั้นตัวใหม่จะไม่ sync ข้อมูลกับ Database**
 
 **3. หลังจากติดตั้งทั้งหมดเสร็จสิ้นทำการสร้าง image ami**
 
-**4. สร้าง template configuration อย่าลืมให้ public ip ที่ interface
+**4. สร้าง template configuration
 
 **5. สร้าง auto scaling เท่านี้ก็ได้ระบบ vpn server ที่สามารถเพิ่มลดจำนวน instance ได้แล้ว**
 
