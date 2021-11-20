@@ -51,7 +51,7 @@ sudo bash tlmvpnServerInstall.sh
 
 **3. หลังจากติดตั้งทั้งหมดเสร็จสิ้นทำการสร้าง image ami**
 
-**4. สร้าง template configuration
+**4. สร้าง template configuration**
 
 **5. สร้าง auto scaling เท่านี้ก็ได้ระบบ vpn server ที่สามารถเพิ่มลดจำนวน instance ได้แล้ว**
 
@@ -68,6 +68,7 @@ sudo bash tlmvpnClientInstall.sh
 ```
 
 ตั้ง credential ของ aws cli ในไฟล์ tlmvpnClientStarter.sh ด้วยคำสั่ง `nano /etc/tlmvpn/tlmvpnClientStarter.sh` ก่อนต้องแก้ตัวแปรดังต่อไปนี้ (แต่หากใช้ iam role ให้ทำคล้ายกับ vpn server)
+- region
 - aws_access_key_id
 - aws_secret_access_key
 - aws_session_token
@@ -88,6 +89,8 @@ bash tlmvpnClient.sh -m start
 
 ## Optional
 
+### OSPF Route
+
 รัน ospfd บน AWS Linux only (VPN Server)
 ```sh
 sudo service ospfd start
@@ -98,25 +101,20 @@ sudo service ospfd start
 sudo systemctl start ospfd
 ```
 
-การตั้งค่า route สำหรับ host ที่ต่อพ่วง VPN Client บน ubuntu โดยพิมพ์คำสั่ง `nano /etc/netplan/50-cloud-init.yaml`
-```
-network:
-    ethernets:
-        ens3:
-            dhcp4: true
-            dhcp6: false
-            match:
-                macaddress: 0e:0f:14:ec:28:a1
-            set-name: ens3
-            gateway4: 10.30.1.10 # เพิ่มตรงนี้
-            routes:
-            - to: 10.20.0.0/16
-              via: 10.30.1.10
-            - to: 172.16.0.0/16
-              via: 10.30.1.10
-    version: 2
-```
-ทำการ reset ระบบ network ด้วยคำสั่งนี้
+### Startup Execuable
+
+หากต้องการให้ VPN Client ทำงานเมื่อ reboot ทุกครั้งให้ config ที่ไฟล์ /etc/rc.local
 ```sh
-sudo netplan apply
+#!/bin/bash
+
+iptables-restore < /etc/iptables.rules
+sudo /etc/tlmvpn/tlmvpnClient.sh -m restart
+sudo systemctl restart ospfd
+```
+
+และต้องรันคำสั่งต่อไปนี้เพื่อให้ execute ตอน reboot ได้
+```sh
+chmod a+x /etc/rc.local
+chmod a+x /etc/tlmvpn/tlmvpnClient.sh
+chmod a+x /etc/tlmvpn/tlmvpnClientStarter.sh
 ```
