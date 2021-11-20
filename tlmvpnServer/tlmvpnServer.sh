@@ -148,7 +148,6 @@ do
         sudo iptables -F
     elif [[ VPNIntCount -lt VPNIntCountNew ]] ; then
         echo "$(date '+%d/%m/%Y %H:%M:%S') restart all vpn service for auto scaling" >> $LOGFILE
-        sleep 3 # wait for terminate connection
         service ipsec restart >> $LOGFILE
         service xl2tpd restart >> $LOGFILE
         sudo iptables -F

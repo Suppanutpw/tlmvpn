@@ -42,9 +42,7 @@ do
 	for i in $(seq 1 1 $VPNIntCount)
 	do
 	    VPNIntPublicIP=$(echo $VPNInstance | jq -r ".Reservations[$((i-1))].Instances[0].PublicIpAddress")
-
-	    VPNIntTunnelIP=$(aws ec2 describe-instances --filters Name=tag:Service,Values=vpnserver Name=instance-state-name,Values=running --query "Reservations[$((i-1))].Instances[].[Tags[?Key=='TunnelIP']][0][0][0].Value")
-	    VPNIntTunnelIP=$(echo $VPNIntTunnelIP | jq -r '.')
+	    VPNIntTunnelIP=$(echo $VPNInstance | jq -r '.Reservations['"$((i-1))"'].Instances[0].Tags[] | select(.Key | contains ("TunnelIP")) | .Value')
 
 	    # ถ้า server ยังไม่ตั้งก็ยังไม่เชื่อมก่อน
 	    if [[ $VPNIntTunnelIP == "0.0.0.0" || $VPNIntTunnelIP == "null" ]]; then
@@ -136,9 +134,6 @@ do
 				echo "length bit = yes";
 				echo ""
 			} >> $xl2tpdFile
-
-		    # add new connection to list
-			connCount=$((connCount + 1))
 		fi
 
 	done
@@ -148,14 +143,14 @@ do
 
 		# RESTART SERVICE
 		mkdir -p /var/run/xl2tpd
-	    touch $l2tpControlFile
-	    service strongswan restart
-	    service strongswan-starter restart
-	    service xl2tpd restart
+		touch $l2tpControlFile
+		service strongswan restart
+		service strongswan-starter restart
+		service xl2tpd restart
 
 		connList=(); connCount=0;
 		dconList=(); dconCount=0;
-		# disconnect all vpn before restart
+		# disconnect all vpn after restart
 		for i in $(seq 1 1 $VPNCOUNT)
 		do
 			dconList[$((dconCount))]="tlmvpn$i"
