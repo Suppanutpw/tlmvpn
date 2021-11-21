@@ -107,7 +107,6 @@ sudo systemctl start ospfd
 ```sh
 #!/bin/bash
 
-iptables-restore < /etc/iptables.rules
 sudo /etc/tlmvpn/tlmvpnClient.sh -m restart
 sudo systemctl restart ospfd
 ```
