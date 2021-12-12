@@ -51,7 +51,7 @@ sudo bash tlmvpnServerInstall.sh
 
 **3. หลังจากติดตั้งทั้งหมดเสร็จสิ้นทำการสร้าง image ami**
 
-**4. สร้าง template configuration**
+**4. สร้าง launch template หรือ launch configuration**
 
 **5. สร้าง auto scaling เท่านี้ก็ได้ระบบ vpn server ที่สามารถเพิ่มลดจำนวน instance ได้แล้ว**
 
