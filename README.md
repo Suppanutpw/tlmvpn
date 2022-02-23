@@ -2,9 +2,9 @@
 ## _Manual AWS Transit Gateway_
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-Service VPN ที่กลุ่มเรานำมาใช้: https://github.com/hwdsl2/setup-ipsec-vpn
+Demo Video: https://youtu.be/Gv64-j1zkVw
 
-Video Demo: https://youtu.be/Gv64-j1zkVw
+Service VPN ที่กลุ่มเรานำมาใช้: https://github.com/hwdsl2/setup-ipsec-vpn
 
 ## VPN server Installation (ec2 linux)
 
