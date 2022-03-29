@@ -1,5 +1,5 @@
 # TLMVPN
-## _SCALEABLE VPN CONNECTION BETWEEN AWS CLOUD AND ON-PREMISE_
+## _Manual AWS Transit Gateway_
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
 Demo Video: https://youtu.be/Gv64-j1zkVw
